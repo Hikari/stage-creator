@@ -5,9 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Count, Avg
 from .models import Stage, StageItem
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
+from collections import Counter
 import json
 
 
@@ -618,3 +619,120 @@ def api_generate_items(request, stage_pk):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+def analytics_dashboard(request):
+    """
+    Display comprehensive analytics dashboard with stage statistics
+    """
+    # Get all public stages and user's own stages if authenticated
+    if request.user.is_authenticated:
+        stages = Stage.objects.filter(
+            Q(is_public=True) | Q(created_by=request.user)
+        ).distinct()
+    else:
+        stages = Stage.objects.filter(is_public=True)
+
+    # Basic statistics
+    total_stages = stages.count()
+    total_items = StageItem.objects.filter(stage__in=stages).count()
+
+    # Calculate average ammo per stage
+    avg_ammo = 0
+    if total_stages > 0:
+        total_ammo = sum(stage.get_total_ammo_count() for stage in stages)
+        avg_ammo = round(total_ammo / total_stages, 1)
+
+    # Calculate average dimensions
+    avg_width = stages.aggregate(Avg('width'))['width__avg'] or 0
+    avg_height = stages.aggregate(Avg('height'))['height__avg'] or 0
+
+    # Item type distribution
+    item_stats = StageItem.objects.filter(stage__in=stages).values('item_type').annotate(
+        count=Count('id')
+    ).order_by('-count')
+
+    # Convert to list with display names
+    item_distribution = []
+    for stat in item_stats:
+        item_type = stat['item_type']
+        display_name = dict(StageItem.ITEM_TYPES).get(item_type, item_type)
+        item_distribution.append({
+            'type': display_name,
+            'count': stat['count'],
+            'percentage': round((stat['count'] / total_items * 100) if total_items > 0 else 0, 1)
+        })
+
+    # Difficulty distribution
+    difficulty_distribution = {
+        'Easy': 0,
+        'Medium': 0,
+        'Hard': 0,
+        'Very Hard': 0
+    }
+    for stage in stages:
+        difficulty = stage.calculate_difficulty()
+        difficulty_distribution[difficulty['level']] += 1
+
+    # Popular item combinations (stages with specific item pairs)
+    item_combinations = []
+    if total_stages > 0:
+        # Find common patterns: barrier + paper_target, shooting_box + paper_target, etc.
+        common_pairs = [
+            ('barrier', 'paper_target', 'Barriers with Paper Targets'),
+            ('wall', 'steel_target', 'Walls with Steel Targets'),
+            ('shooting_box', 'paper_target', 'Shooting Boxes with Paper Targets'),
+            ('no_shoot', 'paper_target', 'No-Shoots with Paper Targets'),
+        ]
+
+        for item1, item2, label in common_pairs:
+            count = 0
+            for stage in stages:
+                items = stage.items.all()
+                has_item1 = items.filter(item_type=item1).exists()
+                has_item2 = items.filter(item_type=item2).exists()
+                if has_item1 and has_item2:
+                    count += 1
+
+            if count > 0:
+                item_combinations.append({
+                    'label': label,
+                    'count': count,
+                    'percentage': round((count / total_stages * 100), 1)
+                })
+
+    # Recent stages
+    recent_stages = stages.order_by('-created_at')[:5]
+    recent_stages_data = []
+    for stage in recent_stages:
+        difficulty = stage.calculate_difficulty()
+        recent_stages_data.append({
+            'stage': stage,
+            'difficulty': difficulty,
+            'item_count': stage.items.count()
+        })
+
+    # IPSC compliance statistics
+    compliant_count = 0
+    for stage in stages:
+        difficulty = stage.calculate_difficulty()
+        if difficulty['is_compliant']:
+            compliant_count += 1
+
+    compliance_rate = round((compliant_count / total_stages * 100) if total_stages > 0 else 0, 1)
+
+    context = {
+        'total_stages': total_stages,
+        'total_items': total_items,
+        'avg_ammo': avg_ammo,
+        'avg_width': round(avg_width, 1),
+        'avg_height': round(avg_height, 1),
+        'item_distribution': item_distribution,
+        'difficulty_distribution': difficulty_distribution,
+        'item_combinations': item_combinations,
+        'recent_stages': recent_stages_data,
+        'compliance_rate': compliance_rate,
+        'compliant_count': compliant_count,
+    }
+
+    return render(request, 'stages/analytics_dashboard.html', context)

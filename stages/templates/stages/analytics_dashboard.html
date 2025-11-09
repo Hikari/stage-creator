@@ -1,0 +1,166 @@
+{% extends "stages/base.html" %}
+
+{% block title %}Analytics Dashboard - IPSC Stage Creator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Analytics Dashboard</h2>
+    <p style="color: #7f8c8d;">Comprehensive statistics and insights from your stage designs</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+    <div class="card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white;">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 2.5rem;">{{ total_stages }}</h3>
+        <p style="margin: 0; opacity: 0.9;">Total Stages</p>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 2.5rem;">{{ total_items }}</h3>
+        <p style="margin: 0; opacity: 0.9;">Total Items Placed</p>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white;">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 2.5rem;">{{ avg_ammo }}</h3>
+        <p style="margin: 0; opacity: 0.9;">Avg. Rounds per Stage</p>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white;">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 2.5rem;">{{ compliance_rate }}%</h3>
+        <p style="margin: 0; opacity: 0.9;">IPSC Compliant ({{ compliant_count }}/{{ total_stages }})</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+    <div class="card">
+        <h3>Difficulty Distribution</h3>
+        <div style="margin-top: 1rem;">
+            {% for level, count in difficulty_distribution.items %}
+            <div style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                    <span style="font-weight: 600;">{{ level }}</span>
+                    <span>{{ count }} stages ({{ count|floatformat:0 }}/{{ total_stages }})</span>
+                </div>
+                <div style="background: #ecf0f1; border-radius: 4px; height: 20px; overflow: hidden;">
+                    {% if total_stages > 0 %}
+                    {% with percentage=count|floatformat:0 %}
+                    <div style="background: {% if level == 'Easy' %}#27ae60{% elif level == 'Medium' %}#f39c12{% elif level == 'Hard' %}#e67e22{% else %}#e74c3c{% endif %}; height: 100%; width: {% widthratio count total_stages 100 %}%; transition: width 0.3s;"></div>
+                    {% endwith %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Average Stage Dimensions</h3>
+        <div style="margin-top: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="padding: 1.5rem; background: #ecf0f1; border-radius: 4px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #3498db;">{{ avg_width }}m</div>
+                    <div style="color: #7f8c8d; margin-top: 0.5rem;">Average Width</div>
+                </div>
+                <div style="padding: 1.5rem; background: #ecf0f1; border-radius: 4px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #3498db;">{{ avg_height }}m</div>
+                    <div style="color: #7f8c8d; margin-top: 0.5rem;">Average Height</div>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: #d5f4e6; border-radius: 4px; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #27ae60;">
+                    {{ avg_width|floatformat:1 }}m × {{ avg_height|floatformat:1 }}m
+                </div>
+                <div style="color: #555; margin-top: 0.25rem;">Average Stage Area: {{ avg_width|floatformat:1|add:avg_height|floatformat:1 }}m²</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if item_distribution %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>Item Type Distribution</h3>
+    <p style="color: #7f8c8d; margin-bottom: 1rem;">Most frequently used items across all stages</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        {% for item in item_distribution %}
+        <div style="padding: 1rem; background: #f8f9fa; border-left: 4px solid #3498db; border-radius: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600;">{{ item.type }}</span>
+                <span style="background: #3498db; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">
+                    {{ item.count }}
+                </span>
+            </div>
+            <div style="margin-top: 0.5rem;">
+                <div style="background: #ecf0f1; border-radius: 4px; height: 8px; overflow: hidden;">
+                    <div style="background: #3498db; height: 100%; width: {{ item.percentage }}%;"></div>
+                </div>
+                <div style="margin-top: 0.25rem; font-size: 0.85rem; color: #7f8c8d;">{{ item.percentage }}% of all items</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if item_combinations %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>Popular Item Combinations</h3>
+    <p style="color: #7f8c8d; margin-bottom: 1rem;">Common patterns found across stages</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+        {% for combo in item_combinations %}
+        <div style="padding: 1rem; background: #f8f9fa; border-radius: 4px; border: 2px solid #ecf0f1;">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ combo.label }}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #7f8c8d;">{{ combo.count }} stages ({{ combo.percentage }}%)</span>
+                <div style="background: #27ae60; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">
+                    {{ combo.percentage }}%
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if recent_stages %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>Recent Stages</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Stage Name</th>
+                <th>Difficulty</th>
+                <th>Items</th>
+                <th>Ammo</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in recent_stages %}
+            <tr>
+                <td>{{ data.stage.name }}</td>
+                <td>
+                    <span style="display: inline-block; padding: 0.25rem 0.75rem; background: {{ data.difficulty.color }}; color: white; border-radius: 4px; font-size: 0.85rem;">
+                        {{ data.difficulty.level }}
+                    </span>
+                </td>
+                <td>{{ data.item_count }}</td>
+                <td>{{ data.difficulty.total_ammo }} rounds</td>
+                <td>{{ data.stage.created_at|date:"M d, Y" }}</td>
+                <td>
+                    <a href="{% url 'stage_detail' data.stage.pk %}" style="color: #3498db; text-decoration: none;">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if total_stages == 0 %}
+<div class="card" style="margin-top: 1.5rem; text-align: center; padding: 3rem;">
+    <h3 style="color: #7f8c8d;">No Data Available</h3>
+    <p style="color: #95a5a6; margin: 1rem 0;">Create some stages to see analytics and insights!</p>
+    <a href="{% url 'stage_create' %}" class="btn">Create Your First Stage</a>
+</div>
+{% endif %}
+{% endblock %}

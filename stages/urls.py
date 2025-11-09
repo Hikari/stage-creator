@@ -10,6 +10,7 @@ urlpatterns = [
 
     # Stage views
     path('', views.stage_list, name='stage_list'),
+    path('analytics/', views.analytics_dashboard, name='analytics_dashboard'),
     path('create/', views.stage_create, name='stage_create'),
     path('generate/', views.stage_generate_ai, name='stage_generate'),
     path('import/', views.stage_import_json, name='stage_import'),
