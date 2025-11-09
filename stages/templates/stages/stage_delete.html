@@ -1,0 +1,23 @@
+{% extends "stages/base.html" %}
+
+{% block title %}Delete {{ stage.name }} - IPSC Stage Creator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Delete Stage</h2>
+    <p style="color: #e74c3c; font-weight: 600; margin: 1rem 0;">
+        Are you sure you want to delete "{{ stage.name }}"?
+    </p>
+    <p style="margin: 1rem 0;">
+        This action cannot be undone. All items on this stage will also be deleted.
+    </p>
+
+    <form method="post" action="{% url 'stage_delete' stage.pk %}">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-danger">Yes, Delete Stage</button>
+            <a href="{% url 'stage_detail' stage.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

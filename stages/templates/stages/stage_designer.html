@@ -1,0 +1,485 @@
+{% extends "stages/base.html" %}
+
+{% block title %}Designer - {{ stage.name }} - IPSC Stage Creator{% endblock %}
+
+{% block extra_css %}
+<style>
+    .designer-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .sidebar {
+        width: 300px;
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+
+    .sidebar h3 {
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+
+    .item-palette {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .palette-item {
+        padding: 0.75rem;
+        background: #3498db;
+        color: white;
+        border-radius: 4px;
+        cursor: move;
+        text-align: center;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+        border: 2px solid transparent;
+    }
+
+    .palette-item:hover {
+        background: #2980b9;
+    }
+
+    .palette-item.dragging {
+        opacity: 0.5;
+    }
+
+    .stats-panel {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .stats-panel .stat {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-panel .stat:last-child {
+        margin-bottom: 0;
+    }
+
+    .stats-panel .stat-label {
+        font-weight: 600;
+    }
+
+    .stats-panel .stat-value {
+        color: #3498db;
+        font-weight: 600;
+    }
+
+    .canvas-container {
+        flex: 1;
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .canvas-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .canvas-wrapper {
+        position: relative;
+        border: 2px solid #ddd;
+        background: #fafafa;
+        overflow: auto;
+        cursor: crosshair;
+    }
+
+    .stage-canvas {
+        position: relative;
+        background:
+            linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+            linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+        background-size: 50px 50px;
+    }
+
+    .stage-item {
+        position: absolute;
+        border: 2px solid #2c3e50;
+        cursor: move;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        padding: 0.25rem;
+        transition: transform 0.1s, box-shadow 0.1s;
+        user-select: none;
+    }
+
+    .stage-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 100;
+    }
+
+    .stage-item.selected {
+        border-color: #f39c12;
+        border-width: 3px;
+        box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+    }
+
+    .stage-item .delete-btn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 20px;
+        height: 20px;
+        background: #e74c3c;
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+        color: white;
+    }
+
+    .stage-item:hover .delete-btn,
+    .stage-item.selected .delete-btn {
+        display: flex;
+    }
+
+    /* Item type colors */
+    .item-paper_target { background: #e74c3c; }
+    .item-steel_target { background: #95a5a6; }
+    .item-popper { background: #34495e; }
+    .item-plate_rack { background: #7f8c8d; }
+    .item-no_shoot { background: #e67e22; }
+    .item-barrier { background: #8b4513; }
+    .item-wall { background: #7f6a5d; }
+    .item-shooting_box { background: #27ae60; }
+    .item-start_position { background: #2ecc71; }
+    .item-table { background: #d4a76a; }
+    .item-barrel { background: #c0c0c0; }
+    .item-door { background: #a0522d; }
+    .item-window { background: #87ceeb; }
+
+    .controls {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .legend {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 1rem;">
+    <h2>Stage Designer: {{ stage.name }}</h2>
+    <p>Drag items from the palette onto the stage to design your IPSC stage</p>
+</div>
+
+<div class="designer-container">
+    <div class="sidebar">
+        <h3>Item Palette</h3>
+        <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 1rem;">
+            Drag items onto the stage
+        </p>
+        <div class="item-palette" id="itemPalette">
+            {% for item_type, item_name in item_types %}
+            <div class="palette-item item-{{ item_type }}" draggable="true" data-item-type="{{ item_type }}">
+                {{ item_name }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3>Statistics</h3>
+        <div class="stats-panel">
+            <div class="stat">
+                <span class="stat-label">Total Items:</span>
+                <span class="stat-value" id="itemCount">{{ items|length }}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Total Ammo:</span>
+                <span class="stat-value" id="ammoCount">{{ stage.get_total_ammo_count }}</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <a href="{% url 'stage_detail' stage.pk %}" class="btn btn-secondary" style="width: 100%;">Done</a>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <div class="canvas-header">
+            <div>
+                <h3>Stage Canvas</h3>
+                <p style="font-size: 0.85rem; color: #7f8c8d;">
+                    {{ stage.width }}m x {{ stage.height }}m (1 grid = 1m)
+                </p>
+            </div>
+        </div>
+
+        <div class="canvas-wrapper">
+            <div class="stage-canvas" id="stageCanvas"
+                 data-stage-id="{{ stage.pk }}"
+                 data-stage-width="{{ stage.width }}"
+                 data-stage-height="{{ stage.height }}"
+                 style="width: {{ stage.width|floatformat:0 }}0px; height: {{ stage.height|floatformat:0 }}0px; min-width: 500px; min-height: 500px;">
+
+                {% for item in items %}
+                <div class="stage-item item-{{ item.item_type }}"
+                     data-item-id="{{ item.id }}"
+                     data-item-type="{{ item.item_type }}"
+                     style="left: {{ item.position_x|floatformat:2 }}0px;
+                            top: {{ item.position_y|floatformat:2 }}0px;
+                            width: {{ item.width|floatformat:2 }}0px;
+                            height: {{ item.height|floatformat:2 }}0px;
+                            transform: rotate({{ item.rotation }}deg);">
+                    {{ item.get_item_type_display }}
+                    <div class="delete-btn" onclick="deleteItem({{ item.id }})">×</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 1rem;">
+            Tips: Drag items to move them. Click and drag items to reposition. Press Delete key to remove selected item.
+        </p>
+    </div>
+</div>
+
+<script>
+    const stageCanvas = document.getElementById('stageCanvas');
+    const stageId = stageCanvas.dataset.stageId;
+    const stageWidth = parseFloat(stageCanvas.dataset.stageWidth);
+    const stageHeight = parseFloat(stageCanvas.dataset.stageHeight);
+    const itemPalette = document.getElementById('itemPalette');
+    let selectedItem = null;
+    let draggedPaletteItem = null;
+    let isDraggingStageItem = false;
+    let dragOffset = { x: 0, y: 0 };
+
+    // Default sizes for different item types (in meters)
+    const defaultSizes = {
+        'paper_target': { width: 0.5, height: 0.8 },
+        'steel_target': { width: 0.3, height: 0.3 },
+        'popper': { width: 0.4, height: 0.6 },
+        'plate_rack': { width: 1.0, height: 0.5 },
+        'no_shoot': { width: 0.5, height: 0.8 },
+        'barrier': { width: 1.5, height: 1.2 },
+        'wall': { width: 2.0, height: 1.5 },
+        'shooting_box': { width: 1.0, height: 1.0 },
+        'start_position': { width: 1.0, height: 1.0 },
+        'table': { width: 1.5, height: 0.8 },
+        'barrel': { width: 0.6, height: 0.6 },
+        'door': { width: 1.0, height: 2.0 },
+        'window': { width: 1.0, height: 1.0 },
+    };
+
+    // Palette item drag start
+    itemPalette.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('palette-item')) {
+            draggedPaletteItem = e.target.dataset.itemType;
+            e.target.classList.add('dragging');
+        }
+    });
+
+    itemPalette.addEventListener('dragend', (e) => {
+        if (e.target.classList.contains('palette-item')) {
+            e.target.classList.remove('dragging');
+        }
+    });
+
+    // Canvas drop handling
+    stageCanvas.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    stageCanvas.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        if (!draggedPaletteItem) return;
+
+        const rect = stageCanvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / 10; // Convert pixels to meters (10px = 1m)
+        const y = (e.clientY - rect.top) / 10;
+
+        // Get default size for this item type
+        const size = defaultSizes[draggedPaletteItem] || { width: 0.5, height: 0.5 };
+
+        // Add item via API
+        try {
+            const response = await fetch(`/stages/api/${stageId}/items/add/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    item_type: draggedPaletteItem,
+                    position_x: x,
+                    position_y: y,
+                    rotation: 0,
+                    width: size.width,
+                    height: size.height,
+                }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                addItemToCanvas(data.item);
+                updateStats(data.total_ammo);
+            }
+        } catch (error) {
+            console.error('Error adding item:', error);
+        }
+
+        draggedPaletteItem = null;
+    });
+
+    // Stage item drag handling
+    stageCanvas.addEventListener('mousedown', (e) => {
+        const item = e.target.closest('.stage-item');
+        if (item && !e.target.classList.contains('delete-btn')) {
+            isDraggingStageItem = true;
+            selectedItem = item;
+
+            // Remove selected class from all items
+            document.querySelectorAll('.stage-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+
+            const rect = item.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDraggingStageItem && selectedItem) {
+            const canvasRect = stageCanvas.getBoundingClientRect();
+            let left = e.clientX - canvasRect.left - dragOffset.x;
+            let top = e.clientY - canvasRect.top - dragOffset.y;
+
+            // Keep item within bounds
+            left = Math.max(0, Math.min(left, canvasRect.width - selectedItem.offsetWidth));
+            top = Math.max(0, Math.min(top, canvasRect.height - selectedItem.offsetHeight));
+
+            selectedItem.style.left = left + 'px';
+            selectedItem.style.top = top + 'px';
+        }
+    });
+
+    document.addEventListener('mouseup', async (e) => {
+        if (isDraggingStageItem && selectedItem) {
+            // Update position via API
+            const itemId = selectedItem.dataset.itemId;
+            const x = parseFloat(selectedItem.style.left) / 10; // Convert to meters
+            const y = parseFloat(selectedItem.style.top) / 10;
+
+            try {
+                await fetch(`/stages/api/items/${itemId}/update/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        position_x: x,
+                        position_y: y,
+                    }),
+                });
+            } catch (error) {
+                console.error('Error updating item position:', error);
+            }
+
+            isDraggingStageItem = false;
+        }
+    });
+
+    // Delete item
+    async function deleteItem(itemId) {
+        if (!confirm('Delete this item?')) return;
+
+        try {
+            const response = await fetch(`/stages/api/items/${itemId}/delete/`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const item = document.querySelector(`[data-item-id="${itemId}"]`);
+                if (item) item.remove();
+                updateStats(data.total_ammo);
+            }
+        } catch (error) {
+            console.error('Error deleting item:', error);
+        }
+    }
+
+    // Add item to canvas
+    function addItemToCanvas(item) {
+        const div = document.createElement('div');
+        div.className = `stage-item item-${item.item_type}`;
+        div.dataset.itemId = item.id;
+        div.dataset.itemType = item.item_type;
+        div.style.left = (item.position_x * 10) + 'px';
+        div.style.top = (item.position_y * 10) + 'px';
+        div.style.width = (item.width * 10) + 'px';
+        div.style.height = (item.height * 10) + 'px';
+        div.style.transform = `rotate(${item.rotation}deg)`;
+        div.innerHTML = `${item.item_type_display}<div class="delete-btn" onclick="deleteItem(${item.id})">×</div>`;
+
+        stageCanvas.appendChild(div);
+    }
+
+    // Update statistics
+    function updateStats(totalAmmo) {
+        document.getElementById('ammoCount').textContent = totalAmmo;
+        document.getElementById('itemCount').textContent = document.querySelectorAll('.stage-item').length;
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Delete' && selectedItem) {
+            const itemId = selectedItem.dataset.itemId;
+            deleteItem(itemId);
+        }
+    });
+
+    // Click outside to deselect
+    stageCanvas.addEventListener('click', (e) => {
+        if (e.target === stageCanvas) {
+            document.querySelectorAll('.stage-item').forEach(i => i.classList.remove('selected'));
+            selectedItem = null;
+        }
+    });
+</script>
+{% endblock %}

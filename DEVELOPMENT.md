@@ -1,0 +1,226 @@
+# IPSC Stage Creator - Development Guide
+
+## MVP Features Implemented
+
+### Core Functionality
+- ✅ Django-based web application
+- ✅ Stage creation with custom dimensions
+- ✅ Drag-and-drop stage designer interface
+- ✅ Multiple item types (targets, barriers, shooting boxes, etc.)
+- ✅ Automatic ammunition counting
+- ✅ Stage saving and management (CRUD operations)
+- ✅ Visual grid-based canvas (1 grid = 1 meter)
+- ✅ Responsive design
+
+### Models
+**Stage Model:**
+- Name and description
+- Width and height (in meters)
+- User association (optional)
+- Timestamps (created_at, updated_at)
+- Methods for ammo counting and item summaries
+
+**StageItem Model:**
+- 13 different item types
+- Position (x, y coordinates in meters)
+- Rotation (degrees)
+- Size (width, height)
+- Custom ammunition count override
+- Notes field
+
+### Item Types Available
+1. Paper Target (2 rounds)
+2. Steel Target (1 round)
+3. Popper (1 round)
+4. Plate Rack (5 rounds)
+5. No Shoot Target (0 rounds)
+6. Barrier (non-shooting)
+7. Wall (non-shooting)
+8. Shooting Box (non-shooting)
+9. Start Position (non-shooting)
+10. Table (non-shooting)
+11. Barrel (non-shooting)
+12. Door (non-shooting)
+13. Window (non-shooting)
+
+### API Endpoints
+- `GET /stages/api/<stage_id>/items/` - Get all items for a stage
+- `POST /stages/api/<stage_id>/items/add/` - Add new item
+- `POST /stages/api/items/<item_id>/update/` - Update item position/properties
+- `DELETE /stages/api/items/<item_id>/delete/` - Delete item
+
+### User Interface Features
+- **Stage List:** View all created stages with statistics
+- **Stage Designer:** Interactive drag-and-drop canvas
+  - Drag items from palette onto stage
+  - Move items by dragging
+  - Delete items with button or Delete key
+  - Visual feedback with colors
+  - Real-time ammo counting
+  - Grid background (50px = 1m)
+- **Stage Detail:** View complete stage information
+- **Admin Interface:** Full Django admin for advanced management
+
+## Technical Architecture
+
+### Technologies
+- **Backend:** Django 5.2.8
+- **Database:** SQLite (default, easily upgradable to PostgreSQL)
+- **Frontend:** Vanilla JavaScript with HTML5 Drag and Drop API
+- **Styling:** Custom CSS with responsive design
+
+### File Structure
+```
+stage-creator/
+├── config/                 # Django project settings
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── stages/                 # Main application
+│   ├── models.py          # Stage and StageItem models
+│   ├── views.py           # Views and API endpoints
+│   ├── urls.py            # URL routing
+│   ├── admin.py           # Admin interface configuration
+│   ├── templates/stages/  # HTML templates
+│   │   ├── base.html
+│   │   ├── stage_list.html
+│   │   ├── stage_create.html
+│   │   ├── stage_detail.html
+│   │   ├── stage_edit.html
+│   │   ├── stage_delete.html
+│   │   └── stage_designer.html
+│   └── migrations/
+├── manage.py
+├── requirements.txt
+├── test_app.py           # Test script
+└── README.md
+```
+
+## Future Enhancements (Post-MVP)
+
+### Phase 2 Features
+1. **AI-Powered Stage Design Suggestions**
+   - Algorithm to suggest stage layouts based on:
+     - Available items and quantities
+     - Stage dimensions
+     - Difficulty level preferences
+     - IPSC rules compliance
+
+2. **Enhanced Designer Features**
+   - Item rotation controls
+   - Item resizing
+   - Copy/paste items
+   - Undo/redo functionality
+   - Snap to grid
+   - Measurement tools
+   - Zoom in/out
+
+3. **Export & Sharing**
+   - Export stage design as PDF
+   - Export as image (PNG/SVG)
+   - Share stages with other users
+   - Public stage gallery
+   - Import/export JSON format
+
+4. **Advanced Features**
+   - Stage difficulty calculator
+   - IPSC rule validation
+   - Multi-stage match planning
+   - Equipment inventory management
+   - Cost estimation
+   - 3D view (optional)
+
+5. **User Management**
+   - User authentication and profiles
+   - Team/club management
+   - Role-based permissions
+   - Stage templates library
+
+6. **Analytics**
+   - Stage statistics dashboard
+   - Popular item combinations
+   - Average ammunition usage
+   - Stage complexity metrics
+
+## Testing
+
+Run the test script:
+```bash
+python test_app.py
+```
+
+This creates a sample stage with various items and validates all models and methods.
+
+## Development Commands
+
+```bash
+# Create migrations
+python manage.py makemigrations
+
+# Apply migrations
+python manage.py migrate
+
+# Create superuser (for admin access)
+python manage.py createsuperuser
+
+# Run development server
+python manage.py runserver
+
+# Access admin interface
+# http://localhost:8000/admin/
+
+# Access application
+# http://localhost:8000/
+```
+
+## Database Schema
+
+### Stage Table
+- id: Primary Key
+- name: CharField(200)
+- description: TextField
+- width: FloatField
+- height: FloatField
+- created_by: ForeignKey(User)
+- created_at: DateTimeField
+- updated_at: DateTimeField
+
+### StageItem Table
+- id: Primary Key
+- stage: ForeignKey(Stage)
+- item_type: CharField(50)
+- position_x: FloatField
+- position_y: FloatField
+- rotation: FloatField
+- width: FloatField
+- height: FloatField
+- custom_ammo_count: IntegerField
+- notes: TextField
+
+## Design Decisions
+
+1. **Coordinate System:** Uses meters as the base unit with 1 meter = 50 pixels for clear visualization
+2. **Item Colors:** Each item type has a distinct color for easy identification
+3. **Default Sizes:** Realistic default sizes for each item type based on IPSC standards
+4. **Drag and Drop:** HTML5 native drag-and-drop for better performance and browser compatibility
+5. **AJAX Updates:** Real-time updates without page reloads for better UX
+6. **Grid Background:** 1-meter grid helps with accurate placement
+
+## Browser Compatibility
+- Chrome/Edge: Full support
+- Firefox: Full support
+- Safari: Full support
+- Mobile browsers: Touch support for drag-and-drop
+
+## Performance Considerations
+- Efficient database queries with select_related/prefetch_related
+- Client-side item manipulation before server sync
+- Optimized canvas rendering
+- No external dependencies for frontend (vanilla JS)
+
+## Security
+- CSRF protection on all forms
+- User authentication ready (optional for MVP)
+- Input validation on models
+- SQL injection prevention via Django ORM
+- XSS prevention via template escaping

@@ -1,0 +1,42 @@
+{% extends "stages/base.html" %}
+
+{% block title %}All Stages - IPSC Stage Creator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>All Stages</h2>
+    <p>Design and manage your IPSC shooting stages</p>
+</div>
+
+{% if stages %}
+<div class="grid">
+    {% for stage in stages %}
+    <div class="stage-card">
+        <h3>{{ stage.name }}</h3>
+        <div class="meta">
+            <strong>Dimensions:</strong> {{ stage.width }}m x {{ stage.height }}m
+        </div>
+        <div class="meta">
+            <strong>Total Ammo:</strong> {{ stage.get_total_ammo_count }} rounds
+        </div>
+        <div class="meta">
+            <strong>Created:</strong> {{ stage.created_at|date:"M d, Y" }}
+        </div>
+        {% if stage.description %}
+        <p style="margin-top: 1rem; color: #555;">{{ stage.description|truncatewords:20 }}</p>
+        {% endif %}
+        <div class="actions">
+            <a href="{% url 'stage_designer' stage.pk %}" class="btn btn-success">Open Designer</a>
+            <a href="{% url 'stage_detail' stage.pk %}" class="btn">View</a>
+            <a href="{% url 'stage_edit' stage.pk %}" class="btn btn-secondary">Edit</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p>No stages created yet.</p>
+    <a href="{% url 'stage_create' %}" class="btn">Create Your First Stage</a>
+</div>
+{% endif %}
+{% endblock %}

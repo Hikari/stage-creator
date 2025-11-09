@@ -1,0 +1,93 @@
+{% extends "stages/base.html" %}
+
+{% block title %}{{ stage.name }} - IPSC Stage Creator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ stage.name }}</h2>
+
+    {% if stage.description %}
+    <p style="color: #555; margin: 1rem 0;">{{ stage.description }}</p>
+    {% endif %}
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+        <div>
+            <strong>Dimensions:</strong><br>
+            {{ stage.width }}m x {{ stage.height }}m
+        </div>
+        <div>
+            <strong>Total Ammo:</strong><br>
+            {{ total_ammo }} rounds
+        </div>
+        <div>
+            <strong>Created:</strong><br>
+            {{ stage.created_at|date:"M d, Y H:i" }}
+        </div>
+        <div>
+            <strong>Last Updated:</strong><br>
+            {{ stage.updated_at|date:"M d, Y H:i" }}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <a href="{% url 'stage_designer' stage.pk %}" class="btn btn-success">Open Designer</a>
+        <a href="{% url 'stage_edit' stage.pk %}" class="btn">Edit Details</a>
+        <a href="{% url 'stage_delete' stage.pk %}" class="btn btn-danger">Delete</a>
+        <a href="{% url 'stage_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+{% if item_summary %}
+<div class="card">
+    <h3>Item Summary</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Type</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item_type, count in item_summary.items %}
+            <tr>
+                <td>{{ item_type }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if items %}
+<div class="card">
+    <h3>All Items</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Position (X, Y)</th>
+                <th>Rotation</th>
+                <th>Size (W x H)</th>
+                <th>Ammo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.get_item_type_display }}</td>
+                <td>{{ item.position_x|floatformat:2 }}m, {{ item.position_y|floatformat:2 }}m</td>
+                <td>{{ item.rotation|floatformat:0 }}°</td>
+                <td>{{ item.width|floatformat:2 }}m x {{ item.height|floatformat:2 }}m</td>
+                <td>{{ item.get_ammo_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card">
+    <p>No items on this stage yet. Use the designer to add items!</p>
+</div>
+{% endif %}
+{% endblock %}
