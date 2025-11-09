@@ -12,7 +12,14 @@
 <div class="grid">
     {% for stage in stages %}
     <div class="stage-card">
-        <h3>{{ stage.name }}</h3>
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+            <h3 style="margin: 0;">{{ stage.name }}</h3>
+            {% with difficulty=stage.calculate_difficulty %}
+            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: {{ difficulty.color }}; color: white; border-radius: 4px; font-size: 0.85rem; font-weight: bold;">
+                {{ difficulty.level }}
+            </span>
+            {% endwith %}
+        </div>
         <div class="meta">
             <strong>Dimensions:</strong> {{ stage.width }}m x {{ stage.height }}m
         </div>

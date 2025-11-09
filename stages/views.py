@@ -40,11 +40,13 @@ def stage_detail(request, pk):
             return redirect('stage_list')
 
     items = stage.items.all()
+    difficulty = stage.calculate_difficulty()
     return render(request, 'stages/stage_detail.html', {
         'stage': stage,
         'items': items,
         'total_ammo': stage.get_total_ammo_count(),
         'item_summary': stage.get_item_summary(),
+        'difficulty': difficulty,
     })
 
 
