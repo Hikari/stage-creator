@@ -13,33 +13,46 @@ A Django-based web application for designing IPSC (International Practical Shoot
 
 ## Installation
 
-1. Create a virtual environment:
+This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable Python package management.
+
+1. Install uv (if not already installed):
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-2. Install dependencies:
+2. Sync dependencies and create virtual environment:
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 3. Run migrations:
 ```bash
-python manage.py migrate
+uv run python manage.py migrate
 ```
 
 4. Create a superuser:
 ```bash
-python manage.py createsuperuser
+uv run python manage.py createsuperuser
 ```
 
 5. Run the development server:
 ```bash
-python manage.py runserver
+uv run python manage.py runserver
 ```
 
 6. Open your browser to http://localhost:8000
+
+### Alternative: Using pip
+
+If you prefer using pip:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
 
 ## Usage
 
