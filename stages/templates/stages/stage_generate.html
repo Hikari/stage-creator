@@ -1,0 +1,72 @@
+{% extends "stages/base.html" %}
+
+{% block title %}AI Generate Stage - IPSC Stage Creator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>AI-Powered Stage Generator</h2>
+    <p style="margin-bottom: 1.5rem; color: #7f8c8d;">
+        Generate a complete IPSC stage design automatically. The AI will strategically place targets,
+        obstacles, and props based on your chosen difficulty level.
+    </p>
+
+    <form method="post" action="{% url 'stage_generate' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="name">Stage Name *</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" placeholder="Optional description for this stage"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="width">Stage Width (meters) *</label>
+            <input type="number" id="width" name="width" step="0.5" min="5" max="50" value="15" required>
+            <small style="color: #7f8c8d;">Recommended: 10-20 meters</small>
+        </div>
+
+        <div class="form-group">
+            <label for="height">Stage Height (meters) *</label>
+            <input type="number" id="height" name="height" step="0.5" min="5" max="50" value="15" required>
+            <small style="color: #7f8c8d;">Recommended: 10-20 meters</small>
+        </div>
+
+        <div class="form-group">
+            <label for="difficulty">Difficulty Level *</label>
+            <select id="difficulty" name="difficulty" required>
+                <option value="easy">Easy - Beginner friendly, fewer targets</option>
+                <option value="medium" selected>Medium - Balanced challenge</option>
+                <option value="hard">Hard - Advanced shooter, complex layout</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="is_public" name="is_public" checked>
+                Make this stage public (visible to all users)
+            </label>
+        </div>
+
+        <div style="margin-top: 1.5rem; padding: 1rem; background: #ecf0f1; border-radius: 4px;">
+            <h3 style="margin-bottom: 0.5rem;">What's Generated?</h3>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #555;">
+                <li><strong>Easy:</strong> 6-10 targets, simple layout, basic obstacles</li>
+                <li><strong>Medium:</strong> 10-16 targets, varied angles, more obstacles</li>
+                <li><strong>Hard:</strong> 16-24 targets, complex positioning, multiple shooting positions</li>
+            </ul>
+            <p style="margin-top: 0.5rem; margin-bottom: 0; color: #555; font-size: 0.9rem;">
+                You can modify the generated design in the designer after creation.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn">🎲 Generate Stage</button>
+            <a href="{% url 'stage_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

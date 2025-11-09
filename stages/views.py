@@ -523,3 +523,96 @@ def stage_print_view(request, pk):
         'total_ammo': stage.get_total_ammo_count(),
         'item_summary': stage.get_item_summary(),
     })
+
+
+# AI-Powered Stage Generation Views
+
+def stage_generate_ai(request):
+    """
+    AI stage generation interface
+    """
+    if request.method == 'POST':
+        from .stage_generator import StageGenerator
+
+        name = request.POST.get('name', 'AI Generated Stage')
+        description = request.POST.get('description', '')
+        width = float(request.POST.get('width', 15))
+        height = float(request.POST.get('height', 12))
+        difficulty = request.POST.get('difficulty', 'medium')
+        is_public = request.POST.get('is_public') == 'on'
+
+        # Create stage
+        stage = Stage.objects.create(
+            name=name,
+            description=description,
+            width=width,
+            height=height,
+            is_public=is_public,
+            created_by=request.user if request.user.is_authenticated else None
+        )
+
+        # Generate items
+        generator = StageGenerator(width, height, difficulty)
+        items_data = generator.generate()
+
+        # Create items
+        for item_data in items_data:
+            StageItem.objects.create(
+                stage=stage,
+                **item_data
+            )
+
+        messages.success(request, f'AI-generated stage "{stage.name}" created successfully with {len(items_data)} items!')
+        return redirect('stage_designer', pk=stage.pk)
+
+    return render(request, 'stages/stage_generate.html', {
+        'item_types': StageItem.ITEM_TYPES,
+    })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_generate_items(request, stage_pk):
+    """
+    API endpoint to generate items for an existing stage
+    """
+    from .stage_generator import StageGenerator
+
+    try:
+        stage = get_object_or_404(Stage, pk=stage_pk)
+
+        # Check permission
+        if request.user.is_authenticated and stage.created_by != request.user:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+
+        data = json.loads(request.body)
+        difficulty = data.get('difficulty', 'medium')
+        available_items = data.get('available_items', None)
+        clear_existing = data.get('clear_existing', False)
+
+        # Clear existing items if requested
+        if clear_existing:
+            stage.items.all().delete()
+
+        # Generate items
+        generator = StageGenerator(stage.width, stage.height, difficulty)
+        items_data = generator.generate(available_items)
+
+        # Create items
+        created_items = []
+        for item_data in items_data:
+            item = StageItem.objects.create(
+                stage=stage,
+                **item_data
+            )
+            created_items.append(item.to_dict())
+
+        return JsonResponse({
+            'success': True,
+            'items': created_items,
+            'total_ammo': stage.get_total_ammo_count(),
+            'difficulty_score': generator.calculate_difficulty_score(),
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)

@@ -1,0 +1,399 @@
+"""
+AI-powered stage design generator for IPSC stages
+"""
+import random
+import math
+from .models import StageItem
+
+
+class StageGenerator:
+    """
+    Generates IPSC stage designs based on constraints and difficulty levels
+    """
+
+    def __init__(self, width, height, difficulty='medium'):
+        self.width = width
+        self.height = height
+        self.difficulty = difficulty
+        self.items = []
+        self.occupied_areas = []
+
+    def generate(self, available_items=None):
+        """
+        Generate a complete stage design
+
+        Args:
+            available_items: Dict of {item_type: quantity} or None for auto-generation
+
+        Returns:
+            List of item configurations
+        """
+        if available_items is None:
+            available_items = self._get_default_items()
+
+        # Clear previous generation
+        self.items = []
+        self.occupied_areas = []
+
+        # Step 1: Place start position
+        self._place_start_position()
+
+        # Step 2: Place shooting boxes if available
+        if available_items.get('shooting_box', 0) > 0:
+            self._place_shooting_boxes(available_items['shooting_box'])
+
+        # Step 3: Place barriers and walls for cover
+        self._place_obstacles(available_items)
+
+        # Step 4: Place targets strategically
+        self._place_targets(available_items)
+
+        # Step 5: Add no-shoot targets near shooting targets
+        if available_items.get('no_shoot', 0) > 0:
+            self._place_no_shoots(available_items['no_shoot'])
+
+        # Step 6: Add props (tables, barrels, etc.)
+        self._place_props(available_items)
+
+        return self.items
+
+    def _get_default_items(self):
+        """Get default item quantities based on difficulty"""
+        difficulty_configs = {
+            'easy': {
+                'paper_target': 6,
+                'steel_target': 3,
+                'popper': 2,
+                'barrier': 2,
+                'wall': 1,
+                'shooting_box': 1,
+                'start_position': 1,
+                'table': 1,
+            },
+            'medium': {
+                'paper_target': 10,
+                'steel_target': 5,
+                'popper': 3,
+                'plate_rack': 1,
+                'no_shoot': 2,
+                'barrier': 3,
+                'wall': 2,
+                'shooting_box': 2,
+                'start_position': 1,
+                'table': 1,
+                'barrel': 2,
+            },
+            'hard': {
+                'paper_target': 14,
+                'steel_target': 8,
+                'popper': 5,
+                'plate_rack': 2,
+                'no_shoot': 4,
+                'barrier': 5,
+                'wall': 3,
+                'door': 1,
+                'window': 1,
+                'shooting_box': 3,
+                'start_position': 1,
+                'table': 2,
+                'barrel': 3,
+            }
+        }
+        return difficulty_configs.get(self.difficulty, difficulty_configs['medium'])
+
+    def _place_start_position(self):
+        """Place the start position at a strategic location"""
+        # Usually at one corner or edge
+        positions = [
+            (1, 1),  # Bottom left
+            (self.width - 2, 1),  # Bottom right
+            (self.width / 2, 1),  # Bottom center
+        ]
+        x, y = random.choice(positions)
+
+        item = {
+            'item_type': 'start_position',
+            'position_x': x,
+            'position_y': y,
+            'rotation': 0,
+            'width': 1.0,
+            'height': 1.0,
+        }
+        self.items.append(item)
+        self._mark_occupied(x, y, 1.0, 1.0)
+
+    def _place_shooting_boxes(self, count):
+        """Place shooting boxes at strategic positions"""
+        zones = [
+            (2, self.height * 0.25),
+            (self.width * 0.5, self.height * 0.5),
+            (self.width - 3, self.height * 0.75),
+        ]
+
+        for i in range(min(count, len(zones))):
+            x, y = zones[i]
+            if self._is_area_free(x, y, 1.0, 1.0):
+                item = {
+                    'item_type': 'shooting_box',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': random.choice([0, 90, 180, 270]),
+                    'width': 1.0,
+                    'height': 1.0,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 1.0, 1.0)
+
+    def _place_obstacles(self, available_items):
+        """Place barriers and walls for cover and complexity"""
+        # Barriers
+        barrier_count = available_items.get('barrier', 0)
+        for _ in range(barrier_count):
+            x, y = self._find_free_position(1.5, 1.2, min_distance=2.0)
+            if x is not None:
+                item = {
+                    'item_type': 'barrier',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': random.choice([0, 45, 90, 135, 180]),
+                    'width': 1.5,
+                    'height': 1.2,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 1.5, 1.2)
+
+        # Walls
+        wall_count = available_items.get('wall', 0)
+        for _ in range(wall_count):
+            x, y = self._find_free_position(2.0, 1.5, min_distance=2.5)
+            if x is not None:
+                item = {
+                    'item_type': 'wall',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': random.choice([0, 90]),
+                    'width': 2.0,
+                    'height': 1.5,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 2.0, 1.5)
+
+        # Doors
+        door_count = available_items.get('door', 0)
+        for _ in range(door_count):
+            x, y = self._find_free_position(1.0, 2.0, min_distance=2.0)
+            if x is not None:
+                item = {
+                    'item_type': 'door',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': 0,
+                    'width': 1.0,
+                    'height': 2.0,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 1.0, 2.0)
+
+    def _place_targets(self, available_items):
+        """Place shooting targets strategically"""
+        # Paper targets
+        paper_count = available_items.get('paper_target', 0)
+        for _ in range(paper_count):
+            x, y = self._find_free_position(0.5, 0.8, min_distance=1.0)
+            if x is not None:
+                item = {
+                    'item_type': 'paper_target',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': random.randint(-15, 15),
+                    'width': 0.5,
+                    'height': 0.8,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 0.5, 0.8)
+
+        # Steel targets
+        steel_count = available_items.get('steel_target', 0)
+        for _ in range(steel_count):
+            x, y = self._find_free_position(0.3, 0.3, min_distance=0.8)
+            if x is not None:
+                item = {
+                    'item_type': 'steel_target',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': 0,
+                    'width': 0.3,
+                    'height': 0.3,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 0.3, 0.3)
+
+        # Poppers
+        popper_count = available_items.get('popper', 0)
+        for _ in range(popper_count):
+            x, y = self._find_free_position(0.4, 0.6, min_distance=1.0)
+            if x is not None:
+                item = {
+                    'item_type': 'popper',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': 0,
+                    'width': 0.4,
+                    'height': 0.6,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 0.4, 0.6)
+
+        # Plate racks
+        plate_count = available_items.get('plate_rack', 0)
+        for _ in range(plate_count):
+            x, y = self._find_free_position(1.0, 0.5, min_distance=1.5)
+            if x is not None:
+                item = {
+                    'item_type': 'plate_rack',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': random.choice([0, 90]),
+                    'width': 1.0,
+                    'height': 0.5,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 1.0, 0.5)
+
+    def _place_no_shoots(self, count):
+        """Place no-shoot targets near paper targets"""
+        paper_targets = [item for item in self.items if item['item_type'] == 'paper_target']
+
+        placed = 0
+        for paper in paper_targets[:count]:
+            if placed >= count:
+                break
+
+            # Try to place near this paper target
+            offset_x = random.choice([-0.8, 0.8])
+            offset_y = random.choice([-0.5, 0.5])
+
+            x = paper['position_x'] + offset_x
+            y = paper['position_y'] + offset_y
+
+            if self._is_area_free(x, y, 0.5, 0.8):
+                item = {
+                    'item_type': 'no_shoot',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': random.randint(-10, 10),
+                    'width': 0.5,
+                    'height': 0.8,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 0.5, 0.8)
+                placed += 1
+
+    def _place_props(self, available_items):
+        """Place props like tables, barrels, windows"""
+        # Tables
+        table_count = available_items.get('table', 0)
+        for _ in range(table_count):
+            x, y = self._find_free_position(1.5, 0.8, min_distance=1.5)
+            if x is not None:
+                item = {
+                    'item_type': 'table',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': random.choice([0, 90]),
+                    'width': 1.5,
+                    'height': 0.8,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 1.5, 0.8)
+
+        # Barrels
+        barrel_count = available_items.get('barrel', 0)
+        for _ in range(barrel_count):
+            x, y = self._find_free_position(0.6, 0.6, min_distance=1.0)
+            if x is not None:
+                item = {
+                    'item_type': 'barrel',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': 0,
+                    'width': 0.6,
+                    'height': 0.6,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 0.6, 0.6)
+
+        # Windows
+        window_count = available_items.get('window', 0)
+        for _ in range(window_count):
+            x, y = self._find_free_position(1.0, 1.0, min_distance=1.5)
+            if x is not None:
+                item = {
+                    'item_type': 'window',
+                    'position_x': x,
+                    'position_y': y,
+                    'rotation': 0,
+                    'width': 1.0,
+                    'height': 1.0,
+                }
+                self.items.append(item)
+                self._mark_occupied(x, y, 1.0, 1.0)
+
+    def _find_free_position(self, width, height, min_distance=1.0, max_attempts=50):
+        """Find a free position for an item with given dimensions"""
+        for _ in range(max_attempts):
+            x = random.uniform(1, self.width - width - 1)
+            y = random.uniform(2, self.height - height - 1)
+
+            if self._is_area_free(x, y, width, height, min_distance):
+                return (x, y)
+
+        return (None, None)
+
+    def _is_area_free(self, x, y, width, height, buffer=0.5):
+        """Check if an area is free from other items"""
+        # Check bounds
+        if x < 0 or y < 0 or x + width > self.width or y + height > self.height:
+            return False
+
+        # Check against occupied areas
+        for ox, oy, ow, oh in self.occupied_areas:
+            # Check if rectangles overlap with buffer
+            if not (x + width + buffer < ox or
+                    x > ox + ow + buffer or
+                    y + height + buffer < oy or
+                    y > oy + oh + buffer):
+                return False
+
+        return True
+
+    def _mark_occupied(self, x, y, width, height):
+        """Mark an area as occupied"""
+        self.occupied_areas.append((x, y, width, height))
+
+    def calculate_difficulty_score(self):
+        """Calculate a difficulty score for the generated stage"""
+        score = 0
+
+        # Count different target types
+        target_count = sum(1 for item in self.items if 'target' in item['item_type'])
+        score += target_count * 2
+
+        # No-shoots increase difficulty
+        no_shoot_count = sum(1 for item in self.items if item['item_type'] == 'no_shoot')
+        score += no_shoot_count * 5
+
+        # Obstacles add complexity
+        obstacle_count = sum(1 for item in self.items
+                           if item['item_type'] in ['barrier', 'wall', 'door'])
+        score += obstacle_count * 3
+
+        # Shooting positions add variety
+        box_count = sum(1 for item in self.items if item['item_type'] == 'shooting_box')
+        score += box_count * 4
+
+        # Stage size factor
+        size_factor = (self.width * self.height) / 100
+        score *= size_factor
+
+        return round(score, 1)
