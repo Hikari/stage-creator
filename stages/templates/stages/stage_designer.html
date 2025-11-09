@@ -17,11 +17,14 @@
         padding: 1.5rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         height: fit-content;
+        max-height: calc(100vh - 150px);
+        overflow-y: auto;
     }
 
     .sidebar h3 {
         margin-bottom: 1rem;
         color: #2c3e50;
+        font-size: 1.1rem;
     }
 
     .item-palette {
@@ -77,6 +80,51 @@
         font-weight: 600;
     }
 
+    .control-panel {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .control-group {
+        margin-bottom: 1rem;
+    }
+
+    .control-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .control-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #555;
+    }
+
+    .control-group input[type="range"] {
+        width: 100%;
+    }
+
+    .control-group input[type="number"] {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .control-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .control-row input {
+        flex: 1;
+    }
+
     .canvas-container {
         flex: 1;
         background: white;
@@ -90,6 +138,62 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1rem;
+    }
+
+    .canvas-controls {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .canvas-controls button,
+    .canvas-controls .toggle-btn {
+        padding: 0.5rem 1rem;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+    }
+
+    .canvas-controls button:hover {
+        background: #2980b9;
+    }
+
+    .canvas-controls button:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+    }
+
+    .toggle-btn.active {
+        background: #27ae60;
+    }
+
+    .zoom-controls {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+        background: #ecf0f1;
+        padding: 0.25rem;
+        border-radius: 4px;
+    }
+
+    .zoom-controls button {
+        padding: 0.25rem 0.5rem;
+        background: white;
+        color: #2c3e50;
+        border: 1px solid #bdc3c7;
+        font-size: 0.85rem;
+    }
+
+    .zoom-controls span {
+        padding: 0 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        min-width: 50px;
+        text-align: center;
     }
 
     .canvas-wrapper {
@@ -106,6 +210,8 @@
             linear-gradient(to right, #e0e0e0 1px, transparent 1px),
             linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
         background-size: 50px 50px;
+        transform-origin: 0 0;
+        transition: transform 0.2s;
     }
 
     .stage-item {
@@ -120,12 +226,10 @@
         font-weight: 600;
         text-align: center;
         padding: 0.25rem;
-        transition: transform 0.1s, box-shadow 0.1s;
         user-select: none;
     }
 
     .stage-item:hover {
-        transform: scale(1.05);
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         z-index: 100;
     }
@@ -134,6 +238,7 @@
         border-color: #f39c12;
         border-width: 3px;
         box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+        z-index: 101;
     }
 
     .stage-item .delete-btn {
@@ -151,12 +256,33 @@
         font-size: 12px;
         line-height: 1;
         color: white;
+        z-index: 10;
     }
 
     .stage-item:hover .delete-btn,
     .stage-item.selected .delete-btn {
         display: flex;
     }
+
+    /* Resize handles */
+    .resize-handle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #f39c12;
+        border: 2px solid white;
+        border-radius: 50%;
+        display: none;
+    }
+
+    .stage-item.selected .resize-handle {
+        display: block;
+    }
+
+    .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+    .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+    .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+    .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
 
     /* Item type colors */
     .item-paper_target { background: #e74c3c; }
@@ -179,24 +305,20 @@
         gap: 0.5rem;
     }
 
-    .legend {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
+    .help-text {
+        font-size: 0.75rem;
+        color: #7f8c8d;
+        background: #ecf0f1;
+        padding: 0.75rem;
+        border-radius: 4px;
+        line-height: 1.6;
         margin-top: 1rem;
-        font-size: 0.85rem;
     }
 
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .legend-color {
-        width: 20px;
-        height: 20px;
-        border-radius: 3px;
+    .help-text strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: #2c3e50;
     }
 </style>
 {% endblock %}
@@ -233,8 +355,39 @@
             </div>
         </div>
 
+        <div id="itemControlPanel" class="control-panel" style="display: none;">
+            <h3>Selected Item</h3>
+            <div class="control-group">
+                <label>Rotation</label>
+                <div class="control-row">
+                    <input type="range" id="rotationSlider" min="0" max="359" value="0" step="1">
+                    <input type="number" id="rotationInput" min="0" max="359" value="0" step="1" style="width: 60px;">
+                    <span style="font-size: 0.85rem;">°</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Size</label>
+                <div class="control-row">
+                    <input type="number" id="widthInput" min="0.1" max="10" step="0.1" placeholder="Width">
+                    <span style="font-size: 0.85rem;">×</span>
+                    <input type="number" id="heightInput" min="0.1" max="10" step="0.1" placeholder="Height">
+                    <span style="font-size: 0.85rem;">m</span>
+                </div>
+            </div>
+        </div>
+
         <div class="controls">
             <a href="{% url 'stage_detail' stage.pk %}" class="btn btn-secondary" style="width: 100%;">Done</a>
+        </div>
+
+        <div class="help-text">
+            <strong>Keyboard Shortcuts:</strong>
+            Delete - Remove item<br>
+            Ctrl+Z - Undo<br>
+            Ctrl+Y - Redo<br>
+            Arrow Keys - Move item<br>
+            R - Rotate 15°<br>
+            Shift+R - Rotate -15°
         </div>
     </div>
 
@@ -246,9 +399,20 @@
                     {{ stage.width }}m x {{ stage.height }}m (1 grid = 1m)
                 </p>
             </div>
+            <div class="canvas-controls">
+                <button id="undoBtn" onclick="undo()" disabled>↶ Undo</button>
+                <button id="redoBtn" onclick="redo()" disabled>↷ Redo</button>
+                <button class="toggle-btn" id="snapToggle" onclick="toggleSnap()">Snap to Grid</button>
+                <div class="zoom-controls">
+                    <button onclick="zoomOut()">-</button>
+                    <span id="zoomLevel">100%</span>
+                    <button onclick="zoomIn()">+</button>
+                    <button onclick="resetZoom()">Reset</button>
+                </div>
+            </div>
         </div>
 
-        <div class="canvas-wrapper">
+        <div class="canvas-wrapper" id="canvasWrapper">
             <div class="stage-canvas" id="stageCanvas"
                  data-stage-id="{{ stage.pk }}"
                  data-stage-width="{{ stage.width }}"
@@ -259,34 +423,46 @@
                 <div class="stage-item item-{{ item.item_type }}"
                      data-item-id="{{ item.id }}"
                      data-item-type="{{ item.item_type }}"
+                     data-rotation="{{ item.rotation }}"
                      style="left: {{ item.position_x|floatformat:2 }}0px;
                             top: {{ item.position_y|floatformat:2 }}0px;
                             width: {{ item.width|floatformat:2 }}0px;
                             height: {{ item.height|floatformat:2 }}0px;
                             transform: rotate({{ item.rotation }}deg);">
-                    {{ item.get_item_type_display }}
+                    <span class="item-label">{{ item.get_item_type_display }}</span>
                     <div class="delete-btn" onclick="deleteItem({{ item.id }})">×</div>
+                    <div class="resize-handle nw" data-direction="nw"></div>
+                    <div class="resize-handle ne" data-direction="ne"></div>
+                    <div class="resize-handle sw" data-direction="sw"></div>
+                    <div class="resize-handle se" data-direction="se"></div>
                 </div>
                 {% endfor %}
             </div>
         </div>
-
-        <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 1rem;">
-            Tips: Drag items to move them. Click and drag items to reposition. Press Delete key to remove selected item.
-        </p>
     </div>
 </div>
 
 <script>
     const stageCanvas = document.getElementById('stageCanvas');
+    const canvasWrapper = document.getElementById('canvasWrapper');
     const stageId = stageCanvas.dataset.stageId;
     const stageWidth = parseFloat(stageCanvas.dataset.stageWidth);
     const stageHeight = parseFloat(stageCanvas.dataset.stageHeight);
     const itemPalette = document.getElementById('itemPalette');
+
     let selectedItem = null;
     let draggedPaletteItem = null;
     let isDraggingStageItem = false;
+    let isResizing = false;
+    let resizeDirection = null;
     let dragOffset = { x: 0, y: 0 };
+    let snapToGrid = false;
+    let zoomScale = 1.0;
+
+    // History for undo/redo
+    let history = [];
+    let historyIndex = -1;
+    const MAX_HISTORY = 50;
 
     // Default sizes for different item types (in meters)
     const defaultSizes = {
@@ -304,6 +480,196 @@
         'door': { width: 1.0, height: 2.0 },
         'window': { width: 1.0, height: 1.0 },
     };
+
+    // Snap to grid function
+    function snapValue(value, gridSize = 0.5) {
+        if (!snapToGrid) return value;
+        return Math.round(value / gridSize) * gridSize;
+    }
+
+    // Save state for undo/redo
+    function saveState() {
+        const state = {
+            items: Array.from(document.querySelectorAll('.stage-item')).map(item => ({
+                id: item.dataset.itemId,
+                left: item.style.left,
+                top: item.style.top,
+                width: item.style.width,
+                height: item.style.height,
+                transform: item.style.transform,
+                rotation: item.dataset.rotation
+            }))
+        };
+
+        // Remove future history if we're not at the end
+        if (historyIndex < history.length - 1) {
+            history = history.slice(0, historyIndex + 1);
+        }
+
+        history.push(state);
+        if (history.length > MAX_HISTORY) {
+            history.shift();
+        } else {
+            historyIndex++;
+        }
+
+        updateUndoRedoButtons();
+    }
+
+    function updateUndoRedoButtons() {
+        document.getElementById('undoBtn').disabled = historyIndex <= 0;
+        document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
+    }
+
+    function undo() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            restoreState(history[historyIndex]);
+            updateUndoRedoButtons();
+        }
+    }
+
+    function redo() {
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            restoreState(history[historyIndex]);
+            updateUndoRedoButtons();
+        }
+    }
+
+    function restoreState(state) {
+        state.items.forEach(itemState => {
+            const item = document.querySelector(`[data-item-id="${itemState.id}"]`);
+            if (item) {
+                item.style.left = itemState.left;
+                item.style.top = itemState.top;
+                item.style.width = itemState.width;
+                item.style.height = itemState.height;
+                item.style.transform = itemState.transform;
+                item.dataset.rotation = itemState.rotation;
+            }
+        });
+    }
+
+    // Zoom functions
+    function zoomIn() {
+        zoomScale = Math.min(zoomScale + 0.1, 2.0);
+        updateZoom();
+    }
+
+    function zoomOut() {
+        zoomScale = Math.max(zoomScale - 0.1, 0.5);
+        updateZoom();
+    }
+
+    function resetZoom() {
+        zoomScale = 1.0;
+        updateZoom();
+    }
+
+    function updateZoom() {
+        stageCanvas.style.transform = `scale(${zoomScale})`;
+        document.getElementById('zoomLevel').textContent = Math.round(zoomScale * 100) + '%';
+    }
+
+    function toggleSnap() {
+        snapToGrid = !snapToGrid;
+        document.getElementById('snapToggle').classList.toggle('active');
+    }
+
+    // Update selected item controls
+    function updateItemControls() {
+        const panel = document.getElementById('itemControlPanel');
+        if (selectedItem) {
+            panel.style.display = 'block';
+            const rotation = parseInt(selectedItem.dataset.rotation) || 0;
+            document.getElementById('rotationSlider').value = rotation;
+            document.getElementById('rotationInput').value = rotation;
+            document.getElementById('widthInput').value = (parseFloat(selectedItem.style.width) / 10).toFixed(2);
+            document.getElementById('heightInput').value = (parseFloat(selectedItem.style.height) / 10).toFixed(2);
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    // Rotation controls
+    document.getElementById('rotationSlider').addEventListener('input', (e) => {
+        if (selectedItem) {
+            const rotation = parseInt(e.target.value);
+            document.getElementById('rotationInput').value = rotation;
+            applyRotation(rotation);
+        }
+    });
+
+    document.getElementById('rotationInput').addEventListener('change', (e) => {
+        if (selectedItem) {
+            let rotation = parseInt(e.target.value);
+            rotation = ((rotation % 360) + 360) % 360;
+            document.getElementById('rotationSlider').value = rotation;
+            e.target.value = rotation;
+            applyRotation(rotation);
+        }
+    });
+
+    async function applyRotation(rotation) {
+        if (!selectedItem) return;
+
+        selectedItem.style.transform = `rotate(${rotation}deg)`;
+        selectedItem.dataset.rotation = rotation;
+
+        const itemId = selectedItem.dataset.itemId;
+        try {
+            await fetch(`/stages/api/items/${itemId}/update/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rotation: rotation })
+            });
+            saveState();
+        } catch (error) {
+            console.error('Error updating rotation:', error);
+        }
+    }
+
+    // Size controls
+    document.getElementById('widthInput').addEventListener('change', (e) => {
+        if (selectedItem) {
+            applySize(parseFloat(e.target.value), null);
+        }
+    });
+
+    document.getElementById('heightInput').addEventListener('change', (e) => {
+        if (selectedItem) {
+            applySize(null, parseFloat(e.target.value));
+        }
+    });
+
+    async function applySize(width, height) {
+        if (!selectedItem) return;
+
+        const currentWidth = parseFloat(selectedItem.style.width) / 10;
+        const currentHeight = parseFloat(selectedItem.style.height) / 10;
+
+        const newWidth = width !== null ? width : currentWidth;
+        const newHeight = height !== null ? height : currentHeight;
+
+        selectedItem.style.width = (newWidth * 10) + 'px';
+        selectedItem.style.height = (newHeight * 10) + 'px';
+
+        document.getElementById('widthInput').value = newWidth.toFixed(2);
+        document.getElementById('heightInput').value = newHeight.toFixed(2);
+
+        const itemId = selectedItem.dataset.itemId;
+        try {
+            await fetch(`/stages/api/items/${itemId}/update/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ width: newWidth, height: newHeight })
+            });
+            saveState();
+        } catch (error) {
+            console.error('Error updating size:', error);
+        }
+    }
 
     // Palette item drag start
     itemPalette.addEventListener('dragstart', (e) => {
@@ -329,19 +695,18 @@
         if (!draggedPaletteItem) return;
 
         const rect = stageCanvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / 10; // Convert pixels to meters (10px = 1m)
-        const y = (e.clientY - rect.top) / 10;
+        let x = (e.clientX - rect.left) / (10 * zoomScale);
+        let y = (e.clientY - rect.top) / (10 * zoomScale);
 
-        // Get default size for this item type
+        x = snapValue(x);
+        y = snapValue(y);
+
         const size = defaultSizes[draggedPaletteItem] || { width: 0.5, height: 0.5 };
 
-        // Add item via API
         try {
             const response = await fetch(`/stages/api/${stageId}/items/add/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     item_type: draggedPaletteItem,
                     position_x: x,
@@ -356,6 +721,7 @@
             if (data.success) {
                 addItemToCanvas(data.item);
                 updateStats(data.total_ammo);
+                saveState();
             }
         } catch (error) {
             console.error('Error adding item:', error);
@@ -364,16 +730,25 @@
         draggedPaletteItem = null;
     });
 
-    // Stage item drag handling
+    // Stage item interaction
     stageCanvas.addEventListener('mousedown', (e) => {
+        const resizeHandle = e.target.closest('.resize-handle');
+        if (resizeHandle) {
+            isResizing = true;
+            resizeDirection = resizeHandle.dataset.direction;
+            selectedItem = e.target.closest('.stage-item');
+            e.preventDefault();
+            return;
+        }
+
         const item = e.target.closest('.stage-item');
         if (item && !e.target.classList.contains('delete-btn')) {
             isDraggingStageItem = true;
             selectedItem = item;
 
-            // Remove selected class from all items
             document.querySelectorAll('.stage-item').forEach(i => i.classList.remove('selected'));
             item.classList.add('selected');
+            updateItemControls();
 
             const rect = item.getBoundingClientRect();
             dragOffset.x = e.clientX - rect.left;
@@ -384,14 +759,56 @@
     });
 
     document.addEventListener('mousemove', (e) => {
-        if (isDraggingStageItem && selectedItem) {
+        if (isResizing && selectedItem) {
             const canvasRect = stageCanvas.getBoundingClientRect();
-            let left = e.clientX - canvasRect.left - dragOffset.x;
-            let top = e.clientY - canvasRect.top - dragOffset.y;
+            const mouseX = (e.clientX - canvasRect.left) / zoomScale;
+            const mouseY = (e.clientY - canvasRect.top) / zoomScale;
 
-            // Keep item within bounds
-            left = Math.max(0, Math.min(left, canvasRect.width - selectedItem.offsetWidth));
-            top = Math.max(0, Math.min(top, canvasRect.height - selectedItem.offsetHeight));
+            const itemRect = selectedItem.getBoundingClientRect();
+            const itemLeft = parseFloat(selectedItem.style.left);
+            const itemTop = parseFloat(selectedItem.style.top);
+            const itemWidth = parseFloat(selectedItem.style.width);
+            const itemHeight = parseFloat(selectedItem.style.height);
+
+            let newWidth = itemWidth;
+            let newHeight = itemHeight;
+            let newLeft = itemLeft;
+            let newTop = itemTop;
+
+            if (resizeDirection.includes('e')) {
+                newWidth = Math.max(10, mouseX - itemLeft);
+            }
+            if (resizeDirection.includes('w')) {
+                newWidth = Math.max(10, itemWidth + (itemLeft - mouseX));
+                newLeft = mouseX;
+            }
+            if (resizeDirection.includes('s')) {
+                newHeight = Math.max(10, mouseY - itemTop);
+            }
+            if (resizeDirection.includes('n')) {
+                newHeight = Math.max(10, itemHeight + (itemTop - mouseY));
+                newTop = mouseY;
+            }
+
+            selectedItem.style.width = newWidth + 'px';
+            selectedItem.style.height = newHeight + 'px';
+            selectedItem.style.left = newLeft + 'px';
+            selectedItem.style.top = newTop + 'px';
+
+            updateItemControls();
+        }
+        else if (isDraggingStageItem && selectedItem) {
+            const canvasRect = stageCanvas.getBoundingClientRect();
+            let left = (e.clientX - canvasRect.left - dragOffset.x) / zoomScale;
+            let top = (e.clientY - canvasRect.top - dragOffset.y) / zoomScale;
+
+            left = Math.max(0, Math.min(left, canvasRect.width / zoomScale - selectedItem.offsetWidth));
+            top = Math.max(0, Math.min(top, canvasRect.height / zoomScale - selectedItem.offsetHeight));
+
+            if (snapToGrid) {
+                left = snapValue(left / 10) * 10;
+                top = snapValue(top / 10) * 10;
+            }
 
             selectedItem.style.left = left + 'px';
             selectedItem.style.top = top + 'px';
@@ -399,23 +816,47 @@
     });
 
     document.addEventListener('mouseup', async (e) => {
-        if (isDraggingStageItem && selectedItem) {
-            // Update position via API
+        if (isResizing && selectedItem) {
             const itemId = selectedItem.dataset.itemId;
-            const x = parseFloat(selectedItem.style.left) / 10; // Convert to meters
+            const width = parseFloat(selectedItem.style.width) / 10;
+            const height = parseFloat(selectedItem.style.height) / 10;
+            const x = parseFloat(selectedItem.style.left) / 10;
             const y = parseFloat(selectedItem.style.top) / 10;
 
             try {
                 await fetch(`/stages/api/items/${itemId}/update/`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         position_x: x,
                         position_y: y,
-                    }),
+                        width: width,
+                        height: height
+                    })
                 });
+                saveState();
+            } catch (error) {
+                console.error('Error updating item:', error);
+            }
+
+            isResizing = false;
+            resizeDirection = null;
+        }
+        else if (isDraggingStageItem && selectedItem) {
+            const itemId = selectedItem.dataset.itemId;
+            const x = parseFloat(selectedItem.style.left) / 10;
+            const y = parseFloat(selectedItem.style.top) / 10;
+
+            try {
+                await fetch(`/stages/api/items/${itemId}/update/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        position_x: x,
+                        position_y: y,
+                    })
+                });
+                saveState();
             } catch (error) {
                 console.error('Error updating item position:', error);
             }
@@ -438,6 +879,9 @@
                 const item = document.querySelector(`[data-item-id="${itemId}"]`);
                 if (item) item.remove();
                 updateStats(data.total_ammo);
+                selectedItem = null;
+                updateItemControls();
+                saveState();
             }
         } catch (error) {
             console.error('Error deleting item:', error);
@@ -450,12 +894,20 @@
         div.className = `stage-item item-${item.item_type}`;
         div.dataset.itemId = item.id;
         div.dataset.itemType = item.item_type;
+        div.dataset.rotation = item.rotation;
         div.style.left = (item.position_x * 10) + 'px';
         div.style.top = (item.position_y * 10) + 'px';
         div.style.width = (item.width * 10) + 'px';
         div.style.height = (item.height * 10) + 'px';
         div.style.transform = `rotate(${item.rotation}deg)`;
-        div.innerHTML = `${item.item_type_display}<div class="delete-btn" onclick="deleteItem(${item.id})">×</div>`;
+        div.innerHTML = `
+            <span class="item-label">${item.item_type_display}</span>
+            <div class="delete-btn" onclick="deleteItem(${item.id})">×</div>
+            <div class="resize-handle nw" data-direction="nw"></div>
+            <div class="resize-handle ne" data-direction="ne"></div>
+            <div class="resize-handle sw" data-direction="sw"></div>
+            <div class="resize-handle se" data-direction="se"></div>
+        `;
 
         stageCanvas.appendChild(div);
     }
@@ -466,11 +918,51 @@
         document.getElementById('itemCount').textContent = document.querySelectorAll('.stage-item').length;
     }
 
-    // Keyboard shortcuts
+    // Enhanced keyboard shortcuts
     document.addEventListener('keydown', (e) => {
+        // Delete
         if (e.key === 'Delete' && selectedItem) {
             const itemId = selectedItem.dataset.itemId;
             deleteItem(itemId);
+        }
+
+        // Undo/Redo
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                undo();
+            } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+                e.preventDefault();
+                redo();
+            }
+        }
+
+        // Rotation
+        if (selectedItem && e.key.toLowerCase() === 'r') {
+            const currentRotation = parseInt(selectedItem.dataset.rotation) || 0;
+            const newRotation = e.shiftKey ? currentRotation - 15 : currentRotation + 15;
+            const normalizedRotation = ((newRotation % 360) + 360) % 360;
+            document.getElementById('rotationSlider').value = normalizedRotation;
+            document.getElementById('rotationInput').value = normalizedRotation;
+            applyRotation(normalizedRotation);
+        }
+
+        // Move with arrow keys
+        if (selectedItem && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+            const moveAmount = e.shiftKey ? 10 : 1; // 1px or 10px
+            let left = parseFloat(selectedItem.style.left);
+            let top = parseFloat(selectedItem.style.top);
+
+            switch(e.key) {
+                case 'ArrowUp': top -= moveAmount; break;
+                case 'ArrowDown': top += moveAmount; break;
+                case 'ArrowLeft': left -= moveAmount; break;
+                case 'ArrowRight': left += moveAmount; break;
+            }
+
+            selectedItem.style.left = Math.max(0, left) + 'px';
+            selectedItem.style.top = Math.max(0, top) + 'px';
         }
     });
 
@@ -479,7 +971,11 @@
         if (e.target === stageCanvas) {
             document.querySelectorAll('.stage-item').forEach(i => i.classList.remove('selected'));
             selectedItem = null;
+            updateItemControls();
         }
     });
+
+    // Save initial state
+    setTimeout(() => saveState(), 100);
 </script>
 {% endblock %}

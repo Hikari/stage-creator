@@ -58,6 +58,13 @@
   - Visual feedback with colors
   - Real-time ammo counting
   - Grid background (50px = 1m)
+  - **Rotation controls:** Slider and input for precise rotation
+  - **Resize handles:** Corner handles for resizing items
+  - **Undo/Redo:** Full history with Ctrl+Z/Ctrl+Y (up to 50 actions)
+  - **Snap to Grid:** Toggle for 0.5m grid snapping
+  - **Zoom controls:** Zoom in/out from 50% to 200%
+  - **Keyboard shortcuts:** Arrow keys for movement, R for rotation, Delete, etc.
+  - **Selected item panel:** Real-time controls for rotation and size
 - **Stage Detail:** View complete stage information
 - **Admin Interface:** Full Django admin for advanced management
 
@@ -103,21 +110,22 @@ stage-creator/
 ## Future Enhancements (Post-MVP)
 
 ### Phase 2 Features
-1. **AI-Powered Stage Design Suggestions**
+1. **Enhanced Designer Features** ✅ COMPLETED
+   - ✅ Item rotation controls (slider + input)
+   - ✅ Item resizing (corner handles)
+   - ✅ Undo/redo functionality (50 action history)
+   - ✅ Snap to grid (0.5m grid)
+   - ✅ Zoom in/out (50%-200%)
+   - ✅ Enhanced keyboard shortcuts (arrows, R for rotate, etc.)
+   - 🔄 Copy/paste items (future)
+   - 🔄 Measurement tools (future)
+
+2. **AI-Powered Stage Design Suggestions**
    - Algorithm to suggest stage layouts based on:
      - Available items and quantities
      - Stage dimensions
      - Difficulty level preferences
      - IPSC rules compliance
-
-2. **Enhanced Designer Features**
-   - Item rotation controls
-   - Item resizing
-   - Copy/paste items
-   - Undo/redo functionality
-   - Snap to grid
-   - Measurement tools
-   - Zoom in/out
 
 3. **Export & Sharing**
    - Export stage design as PDF
