@@ -25,6 +25,10 @@ class Stage(models.Model):
         null=True,
         blank=True
     )
+    is_public = models.BooleanField(
+        default=True,
+        help_text="Make this stage visible to all users"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -3,15 +3,27 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from .models import Stage, StageItem
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
 import json
 
 
 def stage_list(request):
     """
-    Display list of all stages
+    Display list of all public stages and user's own stages
     """
-    stages = Stage.objects.all()
+    if request.user.is_authenticated:
+        # Show public stages and user's own stages (both public and private)
+        stages = Stage.objects.filter(
+            Q(is_public=True) | Q(created_by=request.user)
+        ).distinct()
+    else:
+        # Show only public stages for anonymous users
+        stages = Stage.objects.filter(is_public=True)
+
     return render(request, 'stages/stage_list.html', {'stages': stages})
 
 
@@ -20,6 +32,13 @@ def stage_detail(request, pk):
     Display stage details with all items
     """
     stage = get_object_or_404(Stage, pk=pk)
+
+    # Check if user has permission to view this stage
+    if not stage.is_public:
+        if not request.user.is_authenticated or stage.created_by != request.user:
+            messages.error(request, 'You do not have permission to view this private stage.')
+            return redirect('stage_list')
+
     items = stage.items.all()
     return render(request, 'stages/stage_detail.html', {
         'stage': stage,
@@ -38,12 +57,14 @@ def stage_create(request):
         description = request.POST.get('description', '')
         width = float(request.POST.get('width', 10))
         height = float(request.POST.get('height', 10))
+        is_public = request.POST.get('is_public') == 'on'
 
         stage = Stage.objects.create(
             name=name,
             description=description,
             width=width,
             height=height,
+            is_public=is_public,
             created_by=request.user if request.user.is_authenticated else None
         )
         messages.success(request, f'Stage "{stage.name}" created successfully!')
@@ -207,3 +228,81 @@ def api_get_items(request, stage_pk):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+# Authentication Views
+
+def user_register(request):
+    """
+    User registration view
+    """
+    if request.user.is_authenticated:
+        return redirect('stage_list')
+
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f'Welcome {user.username}! Your account has been created.')
+            return redirect('stage_list')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'stages/register.html', {'form': form})
+
+
+def user_login(request):
+    """
+    User login view
+    """
+    if request.user.is_authenticated:
+        return redirect('stage_list')
+
+    if request.method == 'POST':
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, f'Welcome back, {username}!')
+                next_url = request.GET.get('next', 'stage_list')
+                return redirect(next_url)
+    else:
+        form = CustomAuthenticationForm()
+
+    return render(request, 'stages/login.html', {'form': form})
+
+
+def user_logout(request):
+    """
+    User logout view
+    """
+    logout(request)
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('stage_list')
+
+
+@login_required
+def user_profile(request):
+    """
+    User profile view
+    """
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('user_profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+
+    # Get user's stages
+    user_stages = Stage.objects.filter(created_by=request.user)
+
+    return render(request, 'stages/profile.html', {
+        'form': form,
+        'user_stages': user_stages,
+    })

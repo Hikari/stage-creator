@@ -10,15 +10,15 @@ class StageItemInline(admin.TabularInline):
 
 @admin.register(Stage)
 class StageAdmin(admin.ModelAdmin):
-    list_display = ['name', 'width', 'height', 'created_by', 'created_at', 'get_total_ammo_count']
-    list_filter = ['created_at', 'created_by']
+    list_display = ['name', 'width', 'height', 'is_public', 'created_by', 'created_at', 'get_total_ammo_count']
+    list_filter = ['created_at', 'created_by', 'is_public']
     search_fields = ['name', 'description']
     readonly_fields = ['created_at', 'updated_at', 'get_total_ammo_count', 'get_item_summary']
     inlines = [StageItemInline]
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'created_by')
+            'fields': ('name', 'description', 'created_by', 'is_public')
         }),
         ('Dimensions', {
             'fields': ('width', 'height')

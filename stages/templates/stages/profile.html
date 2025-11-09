@@ -1,0 +1,51 @@
+{% extends "stages/base.html" %}
+
+{% block title %}Profile - IPSC Stage Creator{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>User Profile</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn">Update Profile</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Your Stages ({{ user_stages.count }})</h3>
+    {% if user_stages %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Visibility</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stage in user_stages %}
+                <tr>
+                    <td>{{ stage.name }}</td>
+                    <td>{% if stage.is_public %}Public{% else %}Private{% endif %}</td>
+                    <td>{{ stage.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'stage_detail' stage.pk %}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;">View</a>
+                        <a href="{% url 'stage_designer' stage.pk %}" class="btn btn-success" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You haven't created any stages yet.</p>
+        <a href="{% url 'stage_create' %}" class="btn">Create Your First Stage</a>
+    {% endif %}
+</div>
+{% endblock %}

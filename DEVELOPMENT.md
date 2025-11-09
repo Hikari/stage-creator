@@ -120,12 +120,14 @@ stage-creator/
    - 🔄 Copy/paste items (future)
    - 🔄 Measurement tools (future)
 
-2. **AI-Powered Stage Design Suggestions**
-   - Algorithm to suggest stage layouts based on:
-     - Available items and quantities
-     - Stage dimensions
-     - Difficulty level preferences
-     - IPSC rules compliance
+2. **User Authentication & Management** ✅ COMPLETED
+   - ✅ User registration with email validation
+   - ✅ Login/logout functionality
+   - ✅ User profile pages with stage management
+   - ✅ Public/private stage visibility control
+   - ✅ Permission checks for viewing/editing stages
+   - ✅ Associate stages with creators
+   - ✅ View user's own stages in profile
 
 3. **Export & Sharing**
    - Export stage design as PDF
@@ -134,7 +136,14 @@ stage-creator/
    - Public stage gallery
    - Import/export JSON format
 
-4. **Advanced Features**
+4. **AI-Powered Stage Design Suggestions**
+   - Algorithm to suggest stage layouts based on:
+     - Available items and quantities
+     - Stage dimensions
+     - Difficulty level preferences
+     - IPSC rules compliance
+
+5. **Advanced Features**
    - Stage difficulty calculator
    - IPSC rule validation
    - Multi-stage match planning
@@ -142,13 +151,12 @@ stage-creator/
    - Cost estimation
    - 3D view (optional)
 
-5. **User Management**
-   - User authentication and profiles
+6. **Team Management**
    - Team/club management
    - Role-based permissions
    - Stage templates library
 
-6. **Analytics**
+7. **Analytics**
    - Stage statistics dashboard
    - Popular item combinations
    - Average ammunition usage

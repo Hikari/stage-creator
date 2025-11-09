@@ -1,0 +1,30 @@
+{% extends "stages/base.html" %}
+
+{% block title %}Register - IPSC Stage Creator{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <h2>Create Account</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        <p style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+                {% if field.help_text %}
+                    <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 0.25rem;">{{ field.help_text }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn">Register</button>
+            <a href="{% url 'login' %}" class="btn btn-secondary">Already have an account? Login</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
