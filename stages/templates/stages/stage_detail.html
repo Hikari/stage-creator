@@ -29,11 +29,20 @@
         </div>
     </div>
 
-    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
         <a href="{% url 'stage_designer' stage.pk %}" class="btn btn-success">Open Designer</a>
         <a href="{% url 'stage_edit' stage.pk %}" class="btn">Edit Details</a>
         <a href="{% url 'stage_delete' stage.pk %}" class="btn btn-danger">Delete</a>
         <a href="{% url 'stage_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #ddd;">
+        <h3 style="margin-bottom: 1rem;">Export & Share</h3>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'stage_export_pdf' stage.pk %}" class="btn" style="background: #e74c3c;">📄 Export as PDF</a>
+            <a href="{% url 'stage_export_json' stage.pk %}" class="btn" style="background: #f39c12;">💾 Export as JSON</a>
+            <a href="{% url 'stage_print' stage.pk %}" class="btn" style="background: #9b59b6;" target="_blank">🖨️ Print View</a>
+        </div>
     </div>
 </div>
 

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ stage.name }} - Print View</title>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                margin: 0;
+                padding: 20px;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .metadata {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .metadata p {
+            margin: 5px 0;
+        }
+
+        .stage-visual {
+            border: 2px solid #2c3e50;
+            margin: 20px 0;
+            position: relative;
+            background: white;
+        }
+
+        .stage-item {
+            position: absolute;
+            border: 2px solid #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .item-paper_target { background: #e74c3c; }
+        .item-steel_target { background: #95a5a6; }
+        .item-popper { background: #34495e; }
+        .item-plate_rack { background: #7f8c8d; }
+        .item-no_shoot { background: #e67e22; }
+        .item-barrier { background: #8b4513; }
+        .item-wall { background: #7f6a5d; }
+        .item-shooting_box { background: #27ae60; }
+        .item-start_position { background: #2ecc71; }
+        .item-table { background: #d4a76a; }
+        .item-barrel { background: #c0c0c0; color: #333; }
+        .item-door { background: #a0522d; }
+        .item-window { background: #87ceeb; color: #333; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 5px 10px 0;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" class="btn">Print</button>
+        <a href="{% url 'stage_detail' stage.pk %}" class="btn" style="background: #95a5a6;">Back to Stage</a>
+    </div>
+
+    <h1>{{ stage.name }}</h1>
+
+    {% if stage.description %}
+    <p style="color: #555; margin: 15px 0;">{{ stage.description }}</p>
+    {% endif %}
+
+    <div class="metadata">
+        <p><strong>Dimensions:</strong> {{ stage.width }}m x {{ stage.height }}m</p>
+        <p><strong>Total Ammunition:</strong> {{ total_ammo }} rounds</p>
+        <p><strong>Created:</strong> {{ stage.created_at|date:"F d, Y" }}</p>
+        {% if stage.created_by %}
+        <p><strong>Designer:</strong> {{ stage.created_by.username }}</p>
+        {% endif %}
+    </div>
+
+    <h2>Stage Layout</h2>
+    <div class="stage-visual" style="width: {{ stage.width|floatformat:0 }}0px; height: {{ stage.height|floatformat:0 }}0px; max-width: 700px; max-height: 500px;">
+        {% for item in items %}
+        <div class="stage-item item-{{ item.item_type }}"
+             style="left: {{ item.position_x|floatformat:2 }}0px;
+                    top: {{ item.position_y|floatformat:2 }}0px;
+                    width: {{ item.width|floatformat:2 }}0px;
+                    height: {{ item.height|floatformat:2 }}0px;
+                    transform: rotate({{ item.rotation }}deg);">
+            {{ item.get_item_type_display }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <h2>Item Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Type</th>
+                <th>Count</th>
+                <th>Ammo per Item</th>
+                <th>Total Ammo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item_type, count in item_summary.items %}
+            <tr>
+                <td>{{ item_type }}</td>
+                <td>{{ count }}</td>
+                <td>
+                    {% with items|first as first_item %}
+                    {% for item in items %}
+                        {% if item.get_item_type_display == item_type %}
+                            {{ item.get_ammo_count }}
+                            {% break %}
+                        {% endif %}
+                    {% endfor %}
+                    {% endwith %}
+                </td>
+                <td>
+                    {% with items|first as first_item %}
+                    {% for item in items %}
+                        {% if item.get_item_type_display == item_type %}
+                            {{ item.get_ammo_count|mul:count }}
+                            {% break %}
+                        {% endif %}
+                    {% endfor %}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Detailed Item List</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Position (X, Y)</th>
+                <th>Rotation</th>
+                <th>Size (W x H)</th>
+                <th>Ammo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.get_item_type_display }}</td>
+                <td>{{ item.position_x|floatformat:1 }}m, {{ item.position_y|floatformat:1 }}m</td>
+                <td>{{ item.rotation|floatformat:0 }}°</td>
+                <td>{{ item.width|floatformat:1 }}m x {{ item.height|floatformat:1 }}m</td>
+                <td>{{ item.get_ammo_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p style="margin-top: 30px; color: #7f8c8d; font-size: 0.9rem; text-align: center;">
+        Generated by IPSC Stage Creator on {{ stage.created_at|date:"F d, Y" }}
+    </p>
+</body>
+</html>

@@ -11,10 +11,14 @@ urlpatterns = [
     # Stage views
     path('', views.stage_list, name='stage_list'),
     path('create/', views.stage_create, name='stage_create'),
+    path('import/', views.stage_import_json, name='stage_import'),
     path('<int:pk>/', views.stage_detail, name='stage_detail'),
     path('<int:pk>/edit/', views.stage_edit, name='stage_edit'),
     path('<int:pk>/delete/', views.stage_delete, name='stage_delete'),
     path('<int:pk>/designer/', views.stage_designer, name='stage_designer'),
+    path('<int:pk>/export/pdf/', views.stage_export_pdf, name='stage_export_pdf'),
+    path('<int:pk>/export/json/', views.stage_export_json, name='stage_export_json'),
+    path('<int:pk>/print/', views.stage_print_view, name='stage_print'),
 
     # API endpoints
     path('api/<int:stage_pk>/items/', views.api_get_items, name='api_get_items'),

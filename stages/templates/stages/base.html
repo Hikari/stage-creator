@@ -232,6 +232,7 @@
         <div class="navbar-links">
             <a href="{% url 'stage_list' %}">All Stages</a>
             <a href="{% url 'stage_create' %}">Create New Stage</a>
+            <a href="{% url 'stage_import' %}">Import Stage</a>
             {% if user.is_authenticated %}
                 <span class="user-info">{{ user.username }}</span>
                 <a href="{% url 'user_profile' %}">Profile</a>
