@@ -417,17 +417,22 @@
                  data-stage-id="{{ stage.pk }}"
                  data-stage-width="{{ stage.width }}"
                  data-stage-height="{{ stage.height }}"
-                 style="width: {{ stage.width|floatformat:0 }}0px; height: {{ stage.height|floatformat:0 }}0px; min-width: 500px; min-height: 500px;">
+                 data-pixels-per-meter="50"
+                 style="width: calc({{ stage.width }} * 50px); height: calc({{ stage.height }} * 50px); min-width: 500px; min-height: 500px;">
 
                 {% for item in items %}
                 <div class="stage-item item-{{ item.item_type }}"
                      data-item-id="{{ item.id }}"
                      data-item-type="{{ item.item_type }}"
                      data-rotation="{{ item.rotation }}"
-                     style="left: {{ item.position_x|floatformat:2 }}0px;
-                            top: {{ item.position_y|floatformat:2 }}0px;
-                            width: {{ item.width|floatformat:2 }}0px;
-                            height: {{ item.height|floatformat:2 }}0px;
+                     data-pos-x="{{ item.position_x }}"
+                     data-pos-y="{{ item.position_y }}"
+                     data-width="{{ item.width }}"
+                     data-height="{{ item.height }}"
+                     style="left: calc({{ item.position_x }} * 50px);
+                            top: calc({{ item.position_y }} * 50px);
+                            width: calc({{ item.width }} * 50px);
+                            height: calc({{ item.height }} * 50px);
                             transform: rotate({{ item.rotation }}deg);">
                     <span class="item-label">{{ item.get_item_type_display }}</span>
                     <div class="delete-btn" onclick="deleteItem({{ item.id }})">×</div>
@@ -585,8 +590,8 @@
             const rotation = parseInt(selectedItem.dataset.rotation) || 0;
             document.getElementById('rotationSlider').value = rotation;
             document.getElementById('rotationInput').value = rotation;
-            document.getElementById('widthInput').value = (parseFloat(selectedItem.style.width) / 10).toFixed(2);
-            document.getElementById('heightInput').value = (parseFloat(selectedItem.style.height) / 10).toFixed(2);
+            document.getElementById('widthInput').value = (parseFloat(selectedItem.style.width) / 50).toFixed(2);
+            document.getElementById('heightInput').value = (parseFloat(selectedItem.style.height) / 50).toFixed(2);
         } else {
             panel.style.display = 'none';
         }
@@ -646,14 +651,14 @@
     async function applySize(width, height) {
         if (!selectedItem) return;
 
-        const currentWidth = parseFloat(selectedItem.style.width) / 10;
-        const currentHeight = parseFloat(selectedItem.style.height) / 10;
+        const currentWidth = parseFloat(selectedItem.style.width) / 50;
+        const currentHeight = parseFloat(selectedItem.style.height) / 50;
 
         const newWidth = width !== null ? width : currentWidth;
         const newHeight = height !== null ? height : currentHeight;
 
-        selectedItem.style.width = (newWidth * 10) + 'px';
-        selectedItem.style.height = (newHeight * 10) + 'px';
+        selectedItem.style.width = (newWidth * 50) + 'px';
+        selectedItem.style.height = (newHeight * 50) + 'px';
 
         document.getElementById('widthInput').value = newWidth.toFixed(2);
         document.getElementById('heightInput').value = newHeight.toFixed(2);
@@ -695,8 +700,8 @@
         if (!draggedPaletteItem) return;
 
         const rect = stageCanvas.getBoundingClientRect();
-        let x = (e.clientX - rect.left) / (10 * zoomScale);
-        let y = (e.clientY - rect.top) / (10 * zoomScale);
+        let x = (e.clientX - rect.left) / (50 * zoomScale);
+        let y = (e.clientY - rect.top) / (50 * zoomScale);
 
         x = snapValue(x);
         y = snapValue(y);
@@ -806,8 +811,8 @@
             top = Math.max(0, Math.min(top, canvasRect.height / zoomScale - selectedItem.offsetHeight));
 
             if (snapToGrid) {
-                left = snapValue(left / 10) * 10;
-                top = snapValue(top / 10) * 10;
+                left = snapValue(left / 50) * 50;
+                top = snapValue(top / 50) * 50;
             }
 
             selectedItem.style.left = left + 'px';
@@ -818,10 +823,10 @@
     document.addEventListener('mouseup', async (e) => {
         if (isResizing && selectedItem) {
             const itemId = selectedItem.dataset.itemId;
-            const width = parseFloat(selectedItem.style.width) / 10;
-            const height = parseFloat(selectedItem.style.height) / 10;
-            const x = parseFloat(selectedItem.style.left) / 10;
-            const y = parseFloat(selectedItem.style.top) / 10;
+            const width = parseFloat(selectedItem.style.width) / 50;
+            const height = parseFloat(selectedItem.style.height) / 50;
+            const x = parseFloat(selectedItem.style.left) / 50;
+            const y = parseFloat(selectedItem.style.top) / 50;
 
             try {
                 await fetch(`/stages/api/items/${itemId}/update/`, {
@@ -844,8 +849,8 @@
         }
         else if (isDraggingStageItem && selectedItem) {
             const itemId = selectedItem.dataset.itemId;
-            const x = parseFloat(selectedItem.style.left) / 10;
-            const y = parseFloat(selectedItem.style.top) / 10;
+            const x = parseFloat(selectedItem.style.left) / 50;
+            const y = parseFloat(selectedItem.style.top) / 50;
 
             try {
                 await fetch(`/stages/api/items/${itemId}/update/`, {
@@ -895,10 +900,10 @@
         div.dataset.itemId = item.id;
         div.dataset.itemType = item.item_type;
         div.dataset.rotation = item.rotation;
-        div.style.left = (item.position_x * 10) + 'px';
-        div.style.top = (item.position_y * 10) + 'px';
-        div.style.width = (item.width * 10) + 'px';
-        div.style.height = (item.height * 10) + 'px';
+        div.style.left = (item.position_x * 50) + 'px';
+        div.style.top = (item.position_y * 50) + 'px';
+        div.style.width = (item.width * 50) + 'px';
+        div.style.height = (item.height * 50) + 'px';
         div.style.transform = `rotate(${item.rotation}deg)`;
         div.innerHTML = `
             <span class="item-label">${item.item_type_display}</span>
