@@ -17,42 +17,25 @@ class StageGenerator:
     - Stage flow creates a logical path through the course
     """
 
-    def __init__(self, width, height, difficulty='medium'):
+    def __init__(self, width, height, difficulty='medium', bullet_trap_sides='north'):
         self.width = width
         self.height = height
         self.difficulty = difficulty
         self.items = []
         self.occupied_areas = []
 
-        # Determine bullet trap configuration
-        # Options: 'north', 'south', 'east', 'west', 'north-east', 'south-west', etc.
-        self.bullet_trap_sides = self._determine_bullet_trap_sides()
+        # Parse bullet trap configuration from string
+        # Convert hyphenated format to list: 'north-east' -> ['north', 'east']
+        if '-' in bullet_trap_sides:
+            self.bullet_trap_sides = bullet_trap_sides.split('-')
+        else:
+            self.bullet_trap_sides = [bullet_trap_sides]
 
         # Define safe zone (where shooters will be positioned)
         self.safe_zone = self._define_safe_zone()
 
         # Define target zones (where targets should be placed)
         self.target_zones = self._define_target_zones()
-
-    def _determine_bullet_trap_sides(self):
-        """
-        Determine which sides have bullet traps based on stage layout
-        Returns list of sides: ['north'], ['east', 'north'], etc.
-        """
-        # Common configurations:
-        # - Single side (most common for indoor ranges)
-        # - Two adjacent sides (L-shaped, for bay stages)
-        # - Three sides (U-shaped, for open field stages)
-
-        configurations = [
-            ['north'],           # Targets downrange, shooters at south
-            ['east'],            # Targets right, shooters at west
-            ['north', 'east'],   # L-shaped, corner stage
-            ['north', 'west'],   # L-shaped, corner stage
-            ['east', 'west'],    # Parallel bullet traps (less common)
-        ]
-
-        return random.choice(configurations)
 
     def _define_safe_zone(self):
         """

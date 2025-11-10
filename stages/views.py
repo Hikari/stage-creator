@@ -60,6 +60,7 @@ def stage_create(request):
         description = request.POST.get('description', '')
         width = float(request.POST.get('width', 10))
         height = float(request.POST.get('height', 10))
+        bullet_trap_sides = request.POST.get('bullet_trap_sides', 'north')
         is_public = request.POST.get('is_public') == 'on'
 
         stage = Stage.objects.create(
@@ -67,6 +68,7 @@ def stage_create(request):
             description=description,
             width=width,
             height=height,
+            bullet_trap_sides=bullet_trap_sides,
             is_public=is_public,
             created_by=request.user if request.user.is_authenticated else None
         )
@@ -541,6 +543,7 @@ def stage_generate_ai(request):
         description = request.POST.get('description', '')
         width = float(request.POST.get('width', 15))
         height = float(request.POST.get('height', 12))
+        bullet_trap_sides = request.POST.get('bullet_trap_sides', 'north')
         difficulty = request.POST.get('difficulty', 'medium')
         is_public = request.POST.get('is_public') == 'on'
 
@@ -550,12 +553,13 @@ def stage_generate_ai(request):
             description=description,
             width=width,
             height=height,
+            bullet_trap_sides=bullet_trap_sides,
             is_public=is_public,
             created_by=request.user if request.user.is_authenticated else None
         )
 
         # Generate items
-        generator = StageGenerator(width, height, difficulty)
+        generator = StageGenerator(width, height, difficulty, bullet_trap_sides)
         items_data = generator.generate()
 
         # Create items

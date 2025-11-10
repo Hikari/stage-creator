@@ -8,6 +8,18 @@ class Stage(models.Model):
     """
     Represents an IPSC stage design
     """
+    BULLET_TRAP_CHOICES = [
+        ('north', 'North (Downrange)'),
+        ('south', 'South (Uprange)'),
+        ('east', 'East (Right)'),
+        ('west', 'West (Left)'),
+        ('north-east', 'North-East (Corner)'),
+        ('north-west', 'North-West (Corner)'),
+        ('south-east', 'South-East (Corner)'),
+        ('south-west', 'South-West (Corner)'),
+        ('east-west', 'East-West (Both Sides)'),
+    ]
+
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     width = models.FloatField(
@@ -16,7 +28,13 @@ class Stage(models.Model):
     )
     height = models.FloatField(
         validators=[MinValueValidator(1.0)],
-        help_text="Stage height in meters"
+        help_text="Stage length (depth) in meters"
+    )
+    bullet_trap_sides = models.CharField(
+        max_length=20,
+        choices=BULLET_TRAP_CHOICES,
+        default='north',
+        help_text="Where bullet traps are positioned on the stage"
     )
     created_by = models.ForeignKey(
         User,
@@ -37,6 +55,11 @@ class Stage(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def length(self):
+        """Alias for height field - using 'length' for better shooting stage terminology"""
+        return self.height
 
     def get_total_ammo_count(self):
         """

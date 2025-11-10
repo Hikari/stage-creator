@@ -30,9 +30,25 @@
         </div>
 
         <div class="form-group">
-            <label for="height">Stage Height (meters) *</label>
+            <label for="height">Stage Length (meters) *</label>
             <input type="number" id="height" name="height" step="0.5" min="5" max="50" value="15" required>
-            <small style="color: #7f8c8d;">Recommended: 10-20 meters</small>
+            <small style="color: #7f8c8d;">Depth downrange - Recommended: 10-20 meters</small>
+        </div>
+
+        <div class="form-group">
+            <label for="bullet_trap_sides">Bullet Trap Position *</label>
+            <select id="bullet_trap_sides" name="bullet_trap_sides" required>
+                <option value="north" selected>North (Downrange)</option>
+                <option value="south">South (Uprange)</option>
+                <option value="east">East (Right Side)</option>
+                <option value="west">West (Left Side)</option>
+                <option value="north-east">North-East (Corner)</option>
+                <option value="north-west">North-West (Corner)</option>
+                <option value="south-east">South-East (Corner)</option>
+                <option value="south-west">South-West (Corner)</option>
+                <option value="east-west">East-West (Both Sides)</option>
+            </select>
+            <small style="color: #7f8c8d;">Where are the bullet traps/backstops?</small>
         </div>
 
         <div class="form-group">
