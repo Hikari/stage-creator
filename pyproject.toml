@@ -5,7 +5,7 @@ description = "A Django-based web application for designing IPSC shooting stages
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "django>=4.2,<5.0",
+    "django>=5.2.16,<6.0",
     "pillow>=10.0.0",
     "python-decouple>=3.8",
     "reportlab>=4.0.0",
